@@ -28,7 +28,7 @@ eksctl version
 ## Create EKS CLUSTER
 
 ```bash
-eksctl create cluster --name=my-eks22 \
+eksctl create cluster --name=my-eks \
                       --region=us-east-1 \
                       --zones=us-east-1a,us-east-1b \
                       --version=1.30 \
@@ -36,19 +36,19 @@ eksctl create cluster --name=my-eks22 \
 
 eksctl utils associate-iam-oidc-provider \
     --region us-east-1 \
-    --cluster my-eks22 \
+    --cluster my-eks \
     --approve
 
-eksctl create nodegroup --cluster=my-eks22 \
+eksctl create nodegroup --cluster=my-eks \
                        --region=us-east-1 \
                        --name=node2 \
                        --node-type=t3.medium \
-                       --nodes=3 \
+                       --nodes=2 \
                        --nodes-min=2 \
-                       --nodes-max=4 \
+                       --nodes-max=3 \
                        --node-volume-size=20 \
                        --ssh-access \
-                       --ssh-public-key=Key \
+                       --ssh-public-key=viranz \
                        --managed \
                        --asg-access \
                        --external-dns-access \
