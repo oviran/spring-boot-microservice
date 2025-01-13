@@ -4,21 +4,15 @@ RUN rm -rf /usr/local/tomcat/webapps/*
 
 WORKDIR /app
 
-# Copy the parent POM and child POM into the appropriate directory
-COPY parent-project/pom.xml /app/parent-project/pom.xml
-COPY child-project/pom.xml /app/pom.xml
+COPY ["pom.xml", "./"]
+COPY .mvn .mvn
+COPY mvnw .
 
-# Install Maven and its dependencies
-RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
-RUN mvn dependency:go-offline
+RUN ./mvnw dependency:go-offline
 
-# Copy the rest of the project files
-COPY child-project /app
+COPY . .
+RUN ./mvnw clean package
 
-# Build the project
-RUN mvn clean package
-
-# Copy the generated JAR to the Tomcat webapps directory
 COPY target/apigateway-1.0-SNAPSHOT.jar /usr/local/tomcat/webapps/apigateway-1.0-SNAPSHOT.jar
 
 ENV SERVER_PORT=8088
