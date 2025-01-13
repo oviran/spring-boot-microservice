@@ -1,39 +1,36 @@
-# Use a Tomcat base image with JDK 11
 FROM tomcat:9.0-jdk11-openjdk
 
-# Remove the default webapps to clean up the environment
+# Remove default web apps to clean up
 RUN rm -rf /usr/local/tomcat/webapps/*
+
+# Update and install Maven
+RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 
 # Set the working directory
 WORKDIR /app
 
-# Copy the Maven project files to the container
+# Copy the pom.xml and download dependencies
 COPY ["pom.xml", "./"]
+RUN mvn dependency:go-offline
 
-# Copy the Maven wrapper if present, otherwise ensure Maven is available
-COPY .mvn .mvn
-COPY mvnw .
-
-# Download Maven dependencies
-RUN ./mvnw dependency:go-offline
-
-# Copy the rest of the project files
+# Copy the entire project and build it
 COPY . .
+RUN mvn clean package
 
-# Build the Maven project
-RUN ./mvnw clean package
-
-# Copy the generated JAR to the Tomcat webapps directory
+# Copy the generated JAR to Tomcat's webapps directory
 COPY target/apigateway-1.0-SNAPSHOT.jar /usr/local/tomcat/webapps/apigateway-1.0-SNAPSHOT.jar
 
-# Set an environment variable for the server port
+# Set the environment variable for the port
 ENV SERVER_PORT=8088
 
-# Expose the port the application will run on
+# Expose the port
 EXPOSE 8088
 
 # Start Tomcat
 CMD ["catalina.sh", "run"]
+
+
+
 
 
 

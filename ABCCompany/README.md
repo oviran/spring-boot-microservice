@@ -41,11 +41,11 @@ eksctl utils associate-iam-oidc-provider \
 
 eksctl create nodegroup --cluster=my-eks \
                        --region=us-east-1 \
-                       --name=node2 \
+                       --name=node1 \
                        --node-type=t3.medium \
-                       --nodes=2 \
-                       --nodes-min=2 \
-                       --nodes-max=3 \
+                       --nodes=1 \
+                       --nodes-min=1 \
+                       --nodes-max=2 \
                        --node-volume-size=20 \
                        --ssh-access \
                        --ssh-public-key=viranz \
