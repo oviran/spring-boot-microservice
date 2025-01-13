@@ -2,21 +2,18 @@ FROM tomcat:9.0-jdk11-openjdk
 
 RUN rm -rf /usr/local/tomcat/webapps/*
 
-# Set the working directory
 WORKDIR /app
 
-# Copy the parent POM into the appropriate directory
-COPY ../parent-project/pom.xml /app/parent-project/pom.xml
+# Copy the parent POM and child POM into the appropriate directory
+COPY parent-project/pom.xml /app/parent-project/pom.xml
+COPY child-project/pom.xml /app/pom.xml
 
-# Copy the child project POM
-COPY pom.xml /app/
-
-# Install dependencies using Maven
+# Install Maven and its dependencies
 RUN apt-get update && apt-get install -y maven && rm -rf /var/lib/apt/lists/*
 RUN mvn dependency:go-offline
 
 # Copy the rest of the project files
-COPY . .
+COPY child-project /app
 
 # Build the project
 RUN mvn clean package
