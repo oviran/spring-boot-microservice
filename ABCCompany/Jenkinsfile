@@ -43,15 +43,10 @@ pipeline {
 
         stage('SonarQube Analysis') {
                steps {
-                    script {
-                        withSonarQubeEnv('SonarQube') {
-                             sh '''#!/bin/bash
-                             echo "Starting SonarQube analysis"
-                             mvn sonar:sonar -Dsonar.host.url=$SONARQUBE_URL -Dsonar.login=$SONARQUBE_TOKEN
-                             '''
-                        }
-                    }
-               }
+                   withSonarQubeEnv('sonar') {
+                        sh '''$SCANNER_HOME/bin/sonar-scanner -Dsonar.projectKey=spring-boot-microservice -Dsonar.projectName=spring-boot-microservice -Dsonar.java.binaries=.'''
+                   }
+              }
         }
         stage('Build') {
                     steps {
@@ -70,7 +65,7 @@ pipeline {
                     steps {
                         script{
                             withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                                  dir('/var/lib/jenkins/workspace/10-Tier/src/apigateway/') {
+                                  dir('/var/lib/jenkins/workspace/spring-boot-microservice/ABCCompany/apigateway/') {
                                          sh "docker build -t oshadha96/apigateway:latest ."
                                          sh "docker push oshadha96/apigateway:latest"
                                          sh " docker rmi oshadha96/apigateway:latest"
@@ -83,7 +78,7 @@ pipeline {
                                     steps {
                                         script{
                                             withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                                                  dir('/var/lib/jenkins/workspace/10-Tier/src/discoveryserver/') {
+                                                  dir('/var/lib/jenkins/workspace/spring-boot-microservice/ABCCompany/discoveryserver/') {
                                                          sh "docker build -t oshadha96/discoveryserver:latest ."
                                                          sh "docker push oshadha96/discoveryserver:latest"
                                                          sh " docker rmi oshadha96/discoveryserver:latest"
@@ -97,7 +92,7 @@ pipeline {
                                     steps {
                                         script{
                                             withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                                                  dir('/var/lib/jenkins/workspace/10-Tier/src/inventory/') {
+                                                  dir('/var/lib/jenkins/workspace/spring-boot-microservice/ABCCompany/inventory/') {
                                                          sh "docker build -t oshadha96/inventory:latest ."
                                                          sh "docker push oshadha96/inventory:latest"
                                                          sh " docker rmi oshadha96/inventory:latest"
@@ -111,7 +106,7 @@ pipeline {
                                     steps {
                                         script{
                                             withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                                                  dir('/var/lib/jenkins/workspace/10-Tier/src/order/') {
+                                                  dir('/var/lib/jenkins/workspace/spring-boot-microservice/ABCCompany/order/') {
                                                          sh "docker build -t oshadha96/order:latest ."
                                                          sh "docker push oshadha96/order:latest"
                                                          sh " docker rmi oshadha96/order:latest"
@@ -125,7 +120,7 @@ pipeline {
                                     steps {
                                         script{
                                             withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
-                                                  dir('/var/lib/jenkins/workspace/10-Tier/src/product/') {
+                                                  dir('/var/lib/jenkins/workspace/spring-boot-microservice/ABCCompany/product/') {
                                                          sh "docker build -t oshadha96/product:latest ."
                                                          sh "docker push oshadha96/product:latest"
                                                          sh " docker rmi oshadha96/product:latest"
