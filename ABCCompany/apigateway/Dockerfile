@@ -21,16 +21,16 @@ RUN ./mvnw dependency:go-offline
 # Copy the rest of the application files into the container
 COPY . .
 
-# Build the project (clean install to make sure dependencies are resolved and installed properly)
+
 RUN ./mvnw clean install -DskipTests
 
-# Package the application into a WAR file (or JAR depending on your configuration)
+
 RUN ./mvnw clean package -DskipTests
 
-# Copy the packaged WAR or JAR to Tomcat's webapps directory (assuming WAR format)
+
 COPY target/apigateway-1.0-SNAPSHOT.war /usr/local/tomcat/webapps/apigateway-1.0-SNAPSHOT.war
 
-# Expose the port the app will run on (assuming 8088 based on your original command)
+
 ENV SERVER_PORT=8088
 EXPOSE 8088
 
