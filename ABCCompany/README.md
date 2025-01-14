@@ -164,6 +164,10 @@ roleRef:
 
 [Create Token](https://kubernetes.io/docs/reference/access-authn-authz/service-accounts-admin/#:~:text=To%20create%20a%20non%2Dexpiring,with%20that%20generated%20token%20data.)
 
+```yaml
+kubectl describe secret mysecretname -n webapps
+```
+
 ### Alert Rules Configuration
 
 
@@ -269,4 +273,76 @@ severity: 'critical' # Source alert severity
 target_match:
 severity: 'warning' # Target alert severity
 equal: ['alertname', 'dev', 'instance'] # Fields to match
+```
+
+## Prometheus Configuration
+
+Blackbox exporter implements the multi-target exporter pattern, so we advice
+to read the guide [Understanding and using the multi-target exporter pattern
+](https://prometheus.io/docs/guides/multi-target-exporter/) to get the general
+idea about the configuration.
+
+The blackbox exporter needs to be passed the target as a parameter, this can be
+done with relabelling.
+
+Example config:
+```yml
+scrape_configs:
+  - job_name: 'blackbox'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]  # Look for a HTTP 200 response.
+    static_configs:
+      - targets:
+        - http://prometheus.io    # Target to probe with http.
+        - https://prometheus.io   # Target to probe with https.
+        - http://example.com:8080 # Target to probe with http on port 8080.
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9115  # The blackbox exporter's real hostname:port.
+
+```
+### node exporter
+```
+- job_name: "node_exporter" # Job name for node exporter
+    static_configs:
+      - targets: ["54.226.41.60:9100"]
+
+    - job_name: "jenkins"
+      metrics_path: '/prometheus'
+      static_configs:
+        - targets: ["100.24.30.80:8080"]
+
+
+```
+
+HTTP probes can accept an additional `hostname` parameter that will set `Host` header and TLS SNI. This can be especially useful with `dns_sd_config`:
+```yaml
+scrape_configs:
+  - job_name: blackbox_all
+    metrics_path: /probe
+    params:
+      module: [ http_2xx ]  # Look for a HTTP 200 response.
+    dns_sd_configs:
+      - names:
+          - example.com
+          - prometheus.io
+        type: A
+        port: 443
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+        replacement: https://$1/  # Make probe URL be like https://1.2.3.4:443/
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: 127.0.0.1:9115  # The blackbox exporter's real hostname:port.
+      - source_labels: [__meta_dns_name]
+        target_label: __param_hostname  # Make domain name become 'Host' header for probe requests
+      - source_labels: [__meta_dns_name]
+        target_label: vhost  # and store it in 'vhost' label
 ```
