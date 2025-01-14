@@ -8,9 +8,12 @@ COPY ["pom.xml", "./"]
 COPY .mvn .mvn
 COPY mvnw .
 
+RUN chmod +x mvnw
+
 RUN ./mvnw dependency:go-offline
 
 COPY . .
+
 RUN ./mvnw clean package
 
 COPY target/apigateway-1.0-SNAPSHOT.jar /usr/local/tomcat/webapps/apigateway-1.0-SNAPSHOT.jar
