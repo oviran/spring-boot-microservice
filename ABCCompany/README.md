@@ -174,106 +174,114 @@ kubectl describe secret mysecretname -n webapps
 ```yaml
 groups:
   - name: alert_rules # Name of the alert rules group
-rules:
-  - alert: InstanceDown
-expr: up == 0 # Expression to detect instance down
-for: 1m
-labels:
-severity: "critical"
-annotations:
-summary: "Endpoint {{ $labels.instance }} down"
-description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
-  - alert: WebsiteDown
-expr: probe_success == 0 # Expression to detect website down
-for: 1m
-labels:
-severity: critical
-annotations:
-description: The website at {{ $labels.instance }} is down.
-summary: Website down
-  - alert: HostOutOfMemory
-expr: node_memory_MemAvailable / node_memory_MemTotal * 100 < 25 # Expression to detect low memory
-for: 5m
-labels:
-severity: warning
-annotations:
-summary: "Host out of memory (instance {{ $labels.instance }})"
-description: "Node memory is filling up (< 25% left)\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
-  - alert: HostOutOfDiskSpace
-expr: (node_filesystem_avail{mountpoint="/"} * 100) / node_filesystem_size{mountpoint="/"} < 50 # Expression to detect low disk space
-for: 1s
-labels:
-severity: warning
-annotations:
-summary: "Host out of disk space (instance {{ $labels.instance }})"
-description: "Disk is almost full (< 50% left)\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
-  - alert: HostHighCpuLoad
-expr: (sum by (instance) (irate(node_cpu{job="node_exporter_metrics",mode="idle"}[5m]))) > 80 # Expression to detect high CPU load
-for: 5m
-labels:
-severity: warning
-annotations:
-summary: "Host high CPU load (instance {{ $labels.instance }})"
-description: "CPU load is > 80%\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
-  - alert: ServiceUnavailable
-expr: up{job="node_exporter"} == 0 # Expression to detect service unavailability
-for: 2m
-labels:
-severity: critical
-annotations:
-summary: "Service Unavailable (instance {{ $labels.instance }})"
-description: "The service {{ $labels.job }} is not available\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
-  - alert: HighMemoryUsage
-expr: (node_memory_Active / node_memory_MemTotal) * 100 > 90 # Expression to detect high memory usage
-for: 10m
-labels:
-severity: critical
-annotations:
-summary: "High Memory Usage (instance {{ $labels.instance }})"
-description: "Memory usage is > 90%\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
-  - alert: FileSystemFull
-expr: (node_filesystem_avail / node_filesystem_size) * 100 < 10 # Expression to detect file system almost full
-for: 5m
-labels:
-severity: critical
-annotations:
-summary: "File System Almost Full (instance {{ $labels.instance }})"
-description: "File system has < 10% free space\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+    rules:
+      - alert: InstanceDown
+        expr: up == 0 # Expression to detect instance down
+        for: 1m
+        labels:
+          severity: "critical"
+        annotations:
+          summary: "Endpoint {{ $labels.instance }} down"
+          description: "{{ $labels.instance }} of job {{ $labels.job }} has been down for more than 1 minute."
+
+      - alert: WebsiteDown
+        expr: probe_success == 0 # Expression to detect website down
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          description: "The website at {{ $labels.instance }} is down."
+          summary: "Website down"
+
+      - alert: HostOutOfMemory
+        expr: node_memory_MemAvailable / node_memory_MemTotal * 100 < 25 # Expression to detect low memory
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host out of memory (instance {{ $labels.instance }})"
+          description: "Node memory is filling up (< 25% left)\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+
+      - alert: HostOutOfDiskSpace
+        expr: (node_filesystem_avail{mountpoint="/"} * 100) / node_filesystem_size{mountpoint="/"} < 50 # Expression to detect low disk space
+        for: 1s
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host out of disk space (instance {{ $labels.instance }})"
+          description: "Disk is almost full (< 50% left)\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+
+      - alert: HostHighCpuLoad
+        expr: (sum by (instance) (irate(node_cpu{job="node_exporter_metrics",mode="idle"}[5m]))) > 80 # Expression to detect high CPU load
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host high CPU load (instance {{ $labels.instance }})"
+          description: "CPU load is > 80%\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+
+      - alert: ServiceUnavailable
+        expr: up{job="node_exporter"} == 0 # Expression to detect service unavailability
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service Unavailable (instance {{ $labels.instance }})"
+          description: "The service {{ $labels.job }} is not available\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_Active / node_memory_MemTotal) * 100 > 90 # Expression to detect high memory usage
+        for: 10m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High Memory Usage (instance {{ $labels.instance }})"
+          description: "Memory usage is > 90%\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+
+      - alert: FileSystemFull
+        expr: (node_filesystem_avail / node_filesystem_size) * 100 < 10 # Expression to detect file system almost full
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "File System Almost Full (instance {{ $labels.instance }})"
+          description: "File system has < 10% free space\n VALUE = {{ $value }}\n LABELS: {{ $labels }}"
+
 ```
 
 ### Routing Configuration
 
 
 ```yaml
-route:
-group_by: ['alertname'] # Group by alert name
-group_wait: 30s # Wait time before sending the first notification
-group_interval: 5m # Interval between notifications
-repeat_interval: 1h # Interval to resend notifications
-receiver: 'email-notifications' # Default receiver
+route: null
+group_by:
+  - alertname
+group_wait: 30s
+group_interval: 5m
+repeat_interval: 1h
+receiver: email-notifications
 receivers:
-  - name: 'email-notifications' # Receiver name
+  - name: email-notifications
 email_configs:
-  - to: oviran@gmail.com # Email recipient
-from: test@gmail.com # Email sender
-smarthost: smtp.gmail.com:587 # SMTP server
-auth_username: your_email # SMTP auth username
-auth_identity: your_email # SMTP auth identity
-auth_password: "bdmq omqh vvkk zoqx" # SMTP auth password
-send_resolved: true # Send notifications for resolved alerts
-```
-
-### Inhibition Rules
-
-
-```yaml
+  - to: ovviran@gmail.com
+    from: test@gmail.com
+    smarthost: smtp.gmail.com:587
+    auth_username: ovviran@gmail.com
+    auth_identity: ovviran@gmail.com
+    auth_password: xldj dqqt xseh edqz
+    send_resolved: true
 inhibit_rules:
   - source_match:
-severity: 'critical' # Source alert severity
-target_match:
-severity: 'warning' # Target alert severity
-equal: ['alertname', 'dev', 'instance'] # Fields to match
+      severity: critical
+    target_match:
+      severity: warning
+    equal:
+      - alertname
+      - dev
+      - instance
 ```
+
+
 
 ## Prometheus Configuration
 
